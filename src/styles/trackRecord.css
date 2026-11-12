@@ -1,0 +1,366 @@
+
+/* ══════════════════════════════════════════
+   TRACK RECORD — Premium Dark Section
+══════════════════════════════════════════ */
+
+.track-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 135px 0 55px;
+  background: #071f1a;
+  color: #fff;
+}
+
+/* Subtle noise texture overlay */
+.track-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  background-size: 200px;
+  opacity: .45;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.track-container {
+  position: relative;
+  z-index: 2;
+  width: min(1360px, calc(100% - 100px));
+  margin: 0 auto;
+}
+
+/* ── Ambient orbs ── */
+.track-orb {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.track-orb-one {
+  width: 600px; height: 600px;
+  top: -200px; right: -120px;
+  background: radial-gradient(circle, rgba(224, 75, 67, 0.20), transparent 68%);
+}
+
+.track-orb-two {
+  width: 500px; height: 500px;
+  bottom: -200px; left: 20%;
+  background: radial-gradient(circle, rgba(39, 157, 117, 0.18), transparent 68%);
+}
+
+/* ── Watermark ── */
+.track-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 42%;
+  left: 0;
+  white-space: nowrap;
+  font-family: var(--font-heading, "Manrope", sans-serif);
+  font-size: clamp(100px, 16vw, 240px);
+  font-weight: 800;
+  letter-spacing: -0.09em;
+  color: rgba(255, 255, 255, 0.022);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Top rule ── */
+.track-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.50);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+}
+
+.track-topline > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.track-live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #e66b60;
+  box-shadow: 0 0 0 4px rgba(230, 107, 96, .22), 0 0 15px #e66b60;
+  animation: live-pulse 2.4s ease infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(230,107,96,.22), 0 0 15px #e66b60; }
+  50%       { box-shadow: 0 0 0 7px rgba(230,107,96,.10), 0 0 25px #e66b60; }
+}
+
+.track-section-number { color: rgba(255, 255, 255, 0.28); }
+
+/* ── Main layout ── */
+.track-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: clamp(50px, 8vw, 130px);
+  padding: 100px 0 110px;
+}
+
+.track-copy { max-width: 530px; }
+
+.track-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 28px;
+  color: #f08075;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+}
+
+.track-copy h2 {
+  font-family: var(--font-heading, "Manrope", sans-serif);
+  font-size: clamp(50px, 5.9vw, 83px);
+  line-height: 0.97;
+  font-weight: 600;
+  letter-spacing: -0.08em;
+  margin-bottom: 30px;
+}
+
+.track-copy h2 span { color: #e66b60; }
+
+.track-copy > p {
+  max-width: 500px;
+  color: rgba(255, 255, 255, 0.60);
+  font-size: 15px;
+  line-height: 2.0;
+}
+
+.track-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 36px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.track-link > span {
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  transition: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.track-link:hover > span {
+  background: var(--red, #E04B43);
+  border-color: var(--red, #E04B43);
+  transform: rotate(45deg);
+  box-shadow: 0 8px 24px rgba(224,75,67,0.40);
+}
+
+.track-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 80px;
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.track-note-line {
+  width: 38px; height: 1px;
+  background: var(--red, #E04B43);
+  opacity: .7;
+}
+
+/* ── Stats Grid ── */
+.track-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  perspective: 900px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.track-stat {
+  position: relative;
+  min-height: 240px;
+  padding: 30px 32px;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.025);
+  transition:
+    background 0.45s ease,
+    transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.track-stat::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(255,255,255,.04), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.45s;
+}
+
+.track-stat:hover {
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-6px);
+}
+.track-stat:hover::after { opacity: 1; }
+
+.track-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+}
+
+.track-stat-top svg {
+  color: #e66b60;
+  transition: transform 0.38s ease;
+}
+
+.track-stat:hover .track-stat-top svg { transform: translate(5px, -5px); }
+
+.track-counter {
+  margin-top: 40px;
+  margin-bottom: 8px;
+  color: #fff;
+  font-family: var(--font-heading, "Manrope", sans-serif);
+  font-size: clamp(44px, 4.6vw, 68px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.075em;
+  font-variant-numeric: tabular-nums;
+}
+
+.track-stat p {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Progress bar accent */
+.track-stat-line {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 2px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.track-stat-line span {
+  display: block;
+  width: 0; height: 100%;
+  background: linear-gradient(90deg, var(--red, #E04B43), #f08075);
+  transition: width 0.8s cubic-bezier(.2,.7,.2,1);
+}
+
+.track-stat:hover .track-stat-line span { width: 100%; }
+
+/* ── Bottom strip ── */
+.track-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════
+   TABLET
+══════════════════════════════════════════ */
+@media (max-width: 950px) {
+  .track-layout {
+    grid-template-columns: 1fr;
+    gap: 60px;
+    padding: 80px 0;
+  }
+
+  .track-copy { max-width: 650px; }
+  .track-copy h2 { font-size: clamp(55px, 9vw, 80px); }
+
+  .track-stats-grid { width: 100%; }
+  .track-stat { min-height: 220px; }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE
+══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .track-section { padding: 85px 0 32px; }
+  .track-container { width: calc(100% - 38px); }
+
+  .track-topline { font-size: 8px; letter-spacing: 1.4px; }
+
+  .track-layout { padding: 65px 0; gap: 50px; }
+
+  .track-copy h2 { font-size: clamp(46px, 12vw, 66px); }
+
+  .track-copy > p { font-size: 14px; }
+
+  .track-note { margin-top: 48px; }
+
+  .track-stat { min-height: 185px; padding: 20px 17px; }
+
+  .track-counter {
+    margin-top: 32px;
+    font-size: clamp(36px, 10vw, 50px);
+  }
+
+  .track-stat p { font-size: 11px; }
+
+  .track-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    font-size: 8px;
+    line-height: 1.8;
+  }
+
+  .track-watermark { top: 50%; font-size: 110px; }
+}
+
+/* ══════════════════════════════════════════
+   REDUCED MOTION
+══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .track-stat,
+  .track-link > span,
+  .track-stat-top svg,
+  .track-stat-line span,
+  .track-live-dot {
+    transition: none !important;
+    animation: none !important;
+  }
+}
