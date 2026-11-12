@@ -122,8 +122,8 @@ export default function Solutions() {
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
     gsap.to(card, {
-      rotateY: x * 10,
-      rotateX: -y * 10,
+      rotateY: x * 5,
+      rotateX: -y * 5,
       transformPerspective: 900,
       duration: 0.25,
       ease: "power1.out",
@@ -134,7 +134,7 @@ export default function Solutions() {
     gsap.to(e.currentTarget, {
       rotateY: 0,
       rotateX: 0,
-      duration: 0.6,
+      duration: 0.55,
       ease: "power2.out",
     });
   }

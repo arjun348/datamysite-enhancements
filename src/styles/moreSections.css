@@ -1,39 +1,37 @@
 
 /* ============================================================
-   DUAL COUNTER-ROTATING MARQUEE BANDS
+   SOFTER MARQUEE BANDS
    ============================================================ */
 .dual-bands-wrap {
   position: relative;
   overflow: hidden;
-  padding: 22px 0 18px;
-  background: var(--cream, #FAF9F6);
-  border-bottom: 1px solid var(--border, #E8E5DF);
+  padding: 18px 0 12px;
+  background: linear-gradient(180deg, rgba(240, 244, 241, 0.9), rgba(255,255,255,0.8));
+  border-bottom: 1px solid rgba(11, 74, 58, 0.08);
 }
 
 .band {
   position: relative;
   overflow: hidden;
-  padding: 1.1rem 0;
+  padding: 0.9rem 0;
   white-space: nowrap;
   user-select: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18), 0 18px 28px rgba(17, 43, 34, 0.05);
 }
 
 .band-primary {
-  background: #0B4A3A;
-  color: #FAF9F6;
-  transform: rotate(-2deg) scale(1.05);
+  background: rgba(11, 74, 58, 0.08);
+  color: var(--green);
+  transform: rotate(-1deg) scale(1.02);
   z-index: 5;
-  border-block: 3px solid #062F26;
 }
 
 .band-accent {
-  background: #E04B43;
-  color: #fff;
-  transform: rotate(1.8deg) scale(1.05);
-  margin-top: -1.6rem;
+  background: rgba(224, 75, 67, 0.06);
+  color: var(--red);
+  transform: rotate(1deg) scale(1.02);
+  margin-top: -0.3rem;
   z-index: 4;
-  border-block: 3px solid #b8332c;
 }
 
 .band-track {
@@ -45,12 +43,11 @@
 .band-track span {
   display: inline-block;
   font-family: 'Manrope', var(--font-heading), sans-serif;
-  font-size: clamp(1.4rem, 3.2vw, 2.5rem);
+  font-size: clamp(1rem, 1.7vw, 1.55rem);
   font-weight: 800;
-  font-style: italic;
-  letter-spacing: 2px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  padding-right: 1.5rem;
+  padding-right: 1.25rem;
 }
 
 /* ============================================================

@@ -384,6 +384,17 @@ img { max-width: 100%; display: block; }
   z-index: -1;
 }
 
+@media (min-width: 1025px) {
+  .hero-float-img {
+    animation: hero-artwork-tilt 12s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-artwork-tilt {
+  0%, 100% { rotate: -4deg; translate: 0 0; }
+  50% { rotate: 4deg; translate: 0 -5px; }
+}
+
 /* ── Hero Form Card — Frosted Glass ── */
 .hero-form-card {
   position: relative;
@@ -773,89 +784,6 @@ img { max-width: 100%; display: block; }
 }
 
 /* ══════════════════════════════════════════
-   PRELOADER (DMS HIGH-IMPACT WIPE)
-══════════════════════════════════════════ */
-.dms-preloader {
-  position: fixed;
-  inset: 0;
-  background: var(--green);
-  z-index: 99999;
-  display: grid;
-  place-items: center;
-  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
-  pointer-events: none;
-}
-.dms-preloader.is-done {
-  transform: translateY(-102%);
-}
-.pre-inner {
-  text-align: center;
-  color: #fff;
-}
-.pre-logo {
-  font-family: var(--font-heading);
-  font-size: clamp(5rem, 22vw, 16rem);
-  line-height: 0.85;
-  letter-spacing: 0.04em;
-  font-weight: 800;
-  font-style: italic;
-  transform: skewX(-8deg);
-  text-shadow: 0 10px 40px rgba(0,0,0,0.25);
-}
-.pre-count {
-  font-family: var(--font-heading);
-  font-size: clamp(1.2rem, 2.5vw, 2rem);
-  letter-spacing: 0.2em;
-  margin-top: 1rem;
-  font-weight: 700;
-  opacity: 0.95;
-}
-.pre-bar {
-  width: min(380px, 65vw);
-  height: 5px;
-  background: rgba(0, 0, 0, 0.25);
-  margin: 1.2rem auto 0;
-  transform: skewX(-30deg);
-  overflow: hidden;
-  border-radius: 2px;
-}
-.pre-bar i {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: #fff;
-  transition: width 0.15s linear;
-}
-
-/* ══════════════════════════════════════════
-   CUSTOM INTERACTIVE CURSOR
-══════════════════════════════════════════ */
-.custom-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--red);
-  pointer-events: none;
-  z-index: 99998;
-  mix-blend-mode: difference;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.3s ease;
-  will-change: transform;
-}
-.custom-cursor.big {
-  width: 75px;
-  height: 75px;
-  background: #fff;
-}
-@media (hover: none) {
-  .custom-cursor { display: none !important; }
-}
-
-/* ══════════════════════════════════════════
    HERO SPEED LINES & SPINNING BADGE
 ══════════════════════════════════════════ */
 .speed-lines {
@@ -884,7 +812,7 @@ img { max-width: 100%; display: block; }
   100% { left: 130%; opacity: 0; }
 }
 
-/* Spinning Agency Badge */
+/* Floating agency badge — more editorial than aggressive */
 .hero-badge {
   position: absolute;
   right: 5vw;
@@ -894,13 +822,16 @@ img { max-width: 100%; display: block; }
   display: grid;
   place-items: center;
   z-index: 1;
+  animation: badge-float 7s ease-in-out infinite alternate;
 }
 .hero-badge svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  animation: spin-badge 16s linear infinite;
+  opacity: 0.9;
+  animation: spin-badge 36s linear infinite;
+  transform-origin: center;
 }
 .hero-badge text {
   font-family: var(--font-body);
@@ -917,12 +848,206 @@ img { max-width: 100%; display: block; }
   line-height: 1;
   font-weight: 800;
 }
+@keyframes badge-float {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
 @keyframes spin-badge {
   to { transform: rotate(360deg); }
 }
 
 @media (max-width: 1024px) {
   .hero-badge { display: none; }
+}
+
+/* The displacement lens filters the page behind its circular cursor. */
+.fluid-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fluid-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 230px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 9998;
+  will-change: transform;
+  transition: opacity 0.35s ease;
+  backdrop-filter: url("#fluid-displacement");
+}
+
+.fluid-cursor::before,
+.fluid-cursor::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.fluid-cursor::before {
+  inset: 19px 29px;
+  border-radius: 35% 65% 58% 42% / 51% 38% 62% 49%;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background:
+    radial-gradient(ellipse at 29% 22%, rgba(255, 255, 255, 0.17), transparent 42%),
+    radial-gradient(ellipse at 73% 80%, rgba(255, 255, 255, 0.09), transparent 48%),
+    rgba(255, 255, 255, 0.035);
+  box-shadow:
+    inset 0 2px 6px rgba(255, 255, 255, 0.5),
+    inset 9px 10px 24px rgba(255, 255, 255, 0.12),
+    inset -14px -15px 28px rgba(23, 43, 39, 0.07),
+    0 16px 30px rgba(23, 43, 39, 0.075);
+  opacity: 0.9;
+  animation: fluid-glass-float 5.2s ease-in-out infinite;
+}
+
+.fluid-cursor::after {
+  top: 18%;
+  left: 21%;
+  width: 43%;
+  height: 10%;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.08), transparent);
+  filter: blur(8px);
+  transform: rotate(-32deg);
+  opacity: 0.72;
+  animation: fluid-glass-glint 6s ease-in-out infinite;
+}
+
+@keyframes fluid-glass-float {
+  0%, 100% {
+    border-radius: 35% 65% 58% 42% / 51% 38% 62% 49%;
+    transform: translateY(0) rotate(-6deg) scale(0.98);
+  }
+  50% {
+    border-radius: 66% 34% 41% 59% / 39% 63% 37% 61%;
+    transform: translateY(-5px) rotate(12deg) scale(1.015);
+  }
+}
+
+@keyframes fluid-glass-glint {
+  0%, 100% { transform: translate(0, 0) rotate(-32deg); opacity: 0.42; }
+  50% { transform: translate(12px, 5px) rotate(-24deg); opacity: 0.68; }
+}
+
+.fluid-pointer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  transition: opacity 0.35s ease;
+}
+
+.fluid-cursor-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 58px;
+  height: 58px;
+  filter: url("#fluid-cursor-goo");
+  transform: translate(-50%, -50%);
+  transition: width 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), height 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.fluid-cursor-blob,
+.fluid-cursor-dot::before,
+.fluid-cursor-dot::after {
+  position: absolute;
+  display: block;
+  background: var(--red);
+  will-change: transform, border-radius, width, height;
+}
+
+.fluid-cursor-blob {
+  top: 50%;
+  left: 50%;
+  width: 38px;
+  height: 38px;
+  border-radius: 45% 55% 61% 39% / 46% 41% 59% 54%;
+  transform: translate(-50%, -50%);
+  animation: fluid-cursor-morph 2.4s ease-in-out infinite;
+}
+
+.fluid-cursor-dot::before,
+.fluid-cursor-dot::after {
+  content: "";
+  width: 15px;
+  height: 15px;
+  border-radius: 58% 42% 36% 64% / 47% 60% 40% 53%;
+}
+
+.fluid-cursor-dot::before {
+  top: 7px;
+  left: 4px;
+  animation: fluid-cursor-drop 1.8s ease-in-out infinite alternate;
+}
+
+.fluid-cursor-dot::after {
+  right: 3px;
+  bottom: 5px;
+  width: 12px;
+  height: 12px;
+  animation: fluid-cursor-drop 2.1s ease-in-out -0.7s infinite alternate-reverse;
+}
+
+@keyframes fluid-cursor-morph {
+  0%, 100% {
+    border-radius: 45% 55% 61% 39% / 46% 41% 59% 54%;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1, 1);
+  }
+  35% {
+    border-radius: 61% 39% 44% 56% / 57% 43% 57% 43%;
+    transform: translate(-50%, -50%) rotate(115deg) scale(1.08, 0.9);
+  }
+  70% {
+    border-radius: 39% 61% 57% 43% / 42% 61% 39% 58%;
+    transform: translate(-50%, -50%) rotate(245deg) scale(0.92, 1.08);
+  }
+}
+
+@keyframes fluid-cursor-drop {
+  from {
+    transform: translate(0, 0) scale(0.8);
+    border-radius: 58% 42% 36% 64% / 47% 60% 40% 53%;
+  }
+  to {
+    transform: translate(3px, -2px) scale(1.05);
+    border-radius: 38% 62% 58% 42% / 61% 39% 57% 43%;
+  }
+}
+
+.fluid-pointer.big .fluid-cursor-dot {
+  width: 75px;
+  height: 75px;
+}
+
+.fluid-pointer.big .fluid-cursor-blob,
+.fluid-pointer.big .fluid-cursor-dot::before,
+.fluid-pointer.big .fluid-cursor-dot::after {
+  background: #fff;
+}
+
+.fluid-pointer.big .fluid-cursor-blob {
+  width: 48px;
+  height: 48px;
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .fluid-cursor,
+  .fluid-pointer,
+  .fluid-filter-defs { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

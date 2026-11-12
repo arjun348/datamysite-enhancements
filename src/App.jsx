@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import Preloader from "./components/Preloader";
 import CustomCursor from "./components/CustomCursor";
 import Header from "./components/Header";
 import Hero from "./sections/Hero";
@@ -20,7 +19,6 @@ export default function App() {
 
   return (
     <>
-      <Preloader />
       <CustomCursor />
       <Header />
 
