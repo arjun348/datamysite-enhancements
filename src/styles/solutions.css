@@ -6,7 +6,7 @@
 .solutions-section {
   position: relative;
   overflow: hidden;
-  padding: 155px 0 115px;
+  padding: 90px 0 75px;
   background: var(--cream, #FAF9F6);
   isolation: isolate;
 }
@@ -42,7 +42,7 @@
   justify-content: space-between;
   align-items: flex-end;
   gap: 50px;
-  margin-bottom: 85px;
+  margin-bottom: 48px;
 }
 
 .solutions-eyebrow {

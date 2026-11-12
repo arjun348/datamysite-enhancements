@@ -17,6 +17,7 @@ import {
   Quote,
   ChevronDown,
   MoveUpRight,
+  Check,
 } from "lucide-react";
 import { gsap, ScrollTrigger, useGSAP } from "../animations/gsap";
 import "../styles/moreSections.css";
@@ -1352,16 +1353,21 @@ function FAQ() {
 /* ─── CTA + FOOTER ───────────────────────────────────────────────── */
 function CTAFooter() {
   const [newsletter, setNewsletter] = useState("");
-  const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
   const ctaSection = useRef(null);
   const ctaHeading = useRef(null);
   const ctaBg = useRef(null);
   const orb1 = useRef(null);
   const orb2 = useRef(null);
 
-  const demoSubmit = (event, setMessage, message) => {
-    event.preventDefault();
-    setMessage(message);
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    setSubscribing(true);
+    setTimeout(() => {
+      setSubscribing(false);
+      setSubscribed(true);
+    }, 500);
   };
 
   useGSAP(() => {
@@ -1524,22 +1530,26 @@ function CTAFooter() {
             <p>Need a Help?</p>
             <h3 className="footer-subheading">Subscribe Our Newsletter</h3>
             <p>Sign up now and get the edge!</p>
-            <form onSubmit={(event) => demoSubmit(
-              event,
-              setNewsletterMessage,
-              "Design preview only — no subscription was submitted."
-            )}>
-              <input
-                type="email"
-                value={newsletter}
-                onChange={(event) => setNewsletter(event.target.value)}
-                placeholder="Your Email"
-                required
-                aria-label="Your email"
-              />
-              <button type="submit">Subscribe <ArrowUpRight size={16} /></button>
-            </form>
-            {newsletterMessage && <small className="demo-message">{newsletterMessage}</small>}
+            {subscribed ? (
+              <div className="newsletter-success-badge">
+                <Check size={18} />
+                <span>Subscribed! (Frontend demo only)</span>
+              </div>
+            ) : (
+              <form onSubmit={handleNewsletterSubmit}>
+                <input
+                  type="email"
+                  value={newsletter}
+                  onChange={(event) => setNewsletter(event.target.value)}
+                  placeholder="Your Email"
+                  required
+                  aria-label="Your email"
+                />
+                <button type="submit" disabled={subscribing}>
+                  {subscribing ? "Subscribing..." : <>Subscribe <ArrowUpRight size={16} /></>}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
