@@ -12,6 +12,7 @@ import {
   Radio,
   Users,
   CalendarDays,
+  MessageCircle,
   Code2,
   Star,
   Quote,
@@ -1128,7 +1129,7 @@ function Testimonials() {
           onPointerMove={handlePointerMove}
           onPointerUp={finishPointer}
           onPointerCancel={(event) => finishPointer(event, true)}
-          onPointerLeave={(event) => {
+          onPointerLeave={() => {
             if (drag.current.pointerId !== null && !drag.current.dragging) {
               drag.current.pointerId = null;
               setIsPaused(
@@ -1207,12 +1208,11 @@ function Blogs() {
       });
     }
 
-    // Blog tiles staggered with y:50 + slight rotation
+    // Blog tiles reveal with a vertical stagger
     const tiles = gsap.utils.toArray(".blog-tile", section.current);
     if (tiles.length) {
       gsap.from(tiles, {
         y: 50,
-        rotation: 1.5,
         opacity: 0,
         stagger: 0.12,
         duration: 0.9,
@@ -1549,7 +1549,6 @@ function CTAFooter() {
             pointerEvents: "none",
           }}
         />
-        <div className="cta-glow" style={{ zIndex: 2, position: "relative" }} />
         <div className="more-container cta-inner" style={{ position: "relative", zIndex: 2 }}>
           <div>
             <span className="more-eyebrow">SCHEDULE YOUR APPOINTMENT TODAY</span>
@@ -1647,21 +1646,32 @@ function CTAFooter() {
         </div>
       </footer>
 
+      <button
+        type="button"
+        className="chat-with-us-float"
+        disabled
+        aria-label="Chat with us, unavailable"
+      >
+        <span className="chat-with-us-pulse" aria-hidden="true" />
+        <MessageCircle className="chat-with-us-icon" size={22} aria-hidden="true" />
+        <span>Chat with us</span>
+      </button>
+
       <a
         className="whatsapp-float"
         href="https://api.whatsapp.com/send/?phone=971525287259"
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
         aria-label="Chat with DataMySite on WhatsApp"
       >
         <img src="https://datamysite.com/public/whatsapp-icon2.png" alt="" />
       </a>
 
-      <div className="mobile-contact-bar">
+      {/* <div className="mobile-contact-bar">
         <a href="tel:+971525287259">Call</a>
-        <a href="https://api.whatsapp.com/send/?phone=971525287259" target="_blank" rel="noreferrer">WhatsApp</a>
+        <a href="https://api.whatsapp.com/send/?phone=971525287259" target="_blank" rel="noopener noreferrer">WhatsApp</a>
         <a href="#contact">Enquire</a>
-      </div>
+      </div> */}
     </>
   );
 }

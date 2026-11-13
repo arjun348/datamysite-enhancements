@@ -124,6 +124,7 @@ export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef(null);
+  const menuToggleRef = useRef(null);
 
   /* ── Scroll detection → .scrolled class ── */
   useEffect(() => {
@@ -141,6 +142,7 @@ export default function Header() {
       if (e.key === "Escape" && menuOpen) {
         setMenuOpen(false);
         setActiveDropdown(null);
+        requestAnimationFrame(() => menuToggleRef.current?.focus());
       }
     }
     document.addEventListener("keydown", onKeyDown);
@@ -156,6 +158,7 @@ export default function Header() {
   function closeMenu() {
     setMenuOpen(false);
     setActiveDropdown(null);
+    requestAnimationFrame(() => menuToggleRef.current?.focus());
   }
 
   return (
@@ -198,9 +201,14 @@ export default function Header() {
 
           <button
             className="menu-toggle"
-            onClick={() => setMenuOpen(!menuOpen)}
+            ref={menuToggleRef}
+            onClick={() => {
+              if (menuOpen) closeMenu();
+              else setMenuOpen(true);
+            }}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
+            aria-controls="service-navigation"
           >
             {menuOpen ? <X /> : <Menu />}
           </button>
@@ -212,7 +220,10 @@ export default function Header() {
             aria-hidden="true"
           />
 
-          <nav className={`service-navigation${menuOpen ? " mobile-open" : ""}`}>
+          <nav
+            id="service-navigation"
+            className={`service-navigation${menuOpen ? " mobile-open" : ""}`}
+          >
             {navigation.map((item) => (
               <div
                 className={`nav-dropdown${activeDropdown === item.name ? " is-open" : ""}`}
