@@ -85,7 +85,7 @@ export default function CustomCursor() {
       const target = event.target instanceof Element ? event.target : null;
       pointer.classList.toggle(
         "big",
-        Boolean(target?.closest("a, button, summary, input, textarea, .card, .case-tile, .service-item, .stat, .lgo")),
+        Boolean(target?.closest("a, button, summary, input, textarea, .card, .case-tile, .service-item, .stat, .client-entry")),
       );
 
       if (animationFrame === null) animationFrame = window.requestAnimationFrame(render);

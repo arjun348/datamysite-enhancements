@@ -161,7 +161,7 @@ export default function Solutions() {
           </div>
 
           <div className="solutions-heading-right">
-            <span className="solutions-index">01 / WHAT WE DO</span>
+            {/* <span className="solutions-index">01 / WHAT WE DO</span> */}
             <p>
               We connect brands with people through bold ideas,
               powerful media and experiences that make an impact.

@@ -1,5 +1,5 @@
 
-import { useRef, useState, useEffect } from "react";
+import { Fragment, useRef, useState, useEffect } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,7 +16,6 @@ import {
   Star,
   Quote,
   ChevronDown,
-  MoveUpRight,
   Check,
 } from "lucide-react";
 import { gsap, ScrollTrigger, useGSAP } from "../animations/gsap";
@@ -375,64 +374,35 @@ const faqCategories = [
 
 const site = (path) => `https://datamysite.com${path}`;
 
-/* ─── DUAL COUNTER-ROTATING MARQUEE BANDS ────────────────────────── */
-function Ticker() {
-  const track1 = useRef(null);
-  const track2 = useRef(null);
+/* ─── APPROACH STRIP ─────────────────────────────────────────────── */
+function MomentumStrip() {
+  const strip = useRef(null);
+  const principles = ["Strategy", "Media", "Creative", "Performance"];
 
   useGSAP(() => {
-    if (track1.current) {
-      gsap.to(track1.current, {
-        xPercent: -50,
-        ease: "none",
-        duration: 25,
-        repeat: -1,
-      });
-    }
-    if (track2.current) {
-      gsap.fromTo(
-        track2.current,
-        { xPercent: -50 },
-        {
-          xPercent: 0,
-          ease: "none",
-          duration: 32,
-          repeat: -1,
-        }
-      );
-    }
-  }, []);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  const words = [
-    "OUTDOOR",
-    "DOOH",
-    "TRANSIT",
-    "INFLUENCERS",
-    "PR COVERAGE",
-    "SEO",
-    "RADIO",
-    "EVENTS",
-    "CGI",
-    "PERFORMANCE",
-  ];
-  const line = words.join(" ✦ ") + " ✦ ";
-  const repeated = line.repeat(3);
+    gsap.from(".momentum-item", {
+      y: 18,
+      opacity: 0,
+      stagger: 0.1,
+      duration: 0.65,
+      ease: "power3.out",
+      scrollTrigger: { trigger: strip.current, start: "top 92%", once: true },
+    });
+  }, { scope: strip });
 
   return (
-    <div className="dual-bands-wrap" aria-hidden="true">
-      <div className="band band-primary">
-        <div className="band-track" ref={track1}>
-          <span>{repeated}</span>
-          <span>{repeated}</span>
-        </div>
+    <section className="momentum-strip" ref={strip} aria-label="Our approach">
+      <div className="more-container momentum-grid">
+        {principles.map((principle, index) => (
+          <div className="momentum-item" key={principle}>
+            <span>0{index + 1}</span>
+            <strong>{principle}</strong>
+          </div>
+        ))}
       </div>
-      <div className="band band-accent">
-        <div className="band-track" ref={track2}>
-          <span>{repeated}</span>
-          <span>{repeated}</span>
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }
 
@@ -449,80 +419,92 @@ function SectionHeading({ eyebrow, title, description, dark = false }) {
 
 /* ─── CASE STUDIES ───────────────────────────────────────────────── */
 function CaseStudies() {
-  const rail = useRef(null);
-  const section = useRef(null);
-  const [isCaseHovered, setIsCaseHovered] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [dragRotation, setDragRotation] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragState = useRef({ pointerId: null, startX: 0, startY: 0, rotation: 0, dragging: false });
+  const suppressClick = useRef(false);
+  const rotationStep = 360 / caseStudies.length;
 
   const move = (direction) => {
-    rail.current?.scrollBy({
-      left: direction * (rail.current.clientWidth * 0.78),
-      behavior: "smooth",
-    });
+    setActiveIndex((index) => (index + direction + caseStudies.length) % caseStudies.length);
   };
 
-  // Continuous auto-slide for case studies gallery
+  const handlePointerDown = (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragState.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      rotation: 0,
+      dragging: false,
+    };
+    setIsPaused(true);
+  };
+
+  const handlePointerMove = (event) => {
+    const drag = dragState.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (!drag.dragging && Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      drag.dragging = true;
+      setIsDragging(true);
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    if (!drag.dragging) return;
+
+    event.preventDefault();
+    const degrees = (-deltaX / (event.currentTarget.clientWidth * 0.22)) * rotationStep;
+    drag.rotation = Math.max(-rotationStep * 2, Math.min(rotationStep * 2, degrees));
+    setDragRotation(drag.rotation);
+  };
+
+  const finishPointer = (event, cancelled = false) => {
+    const drag = dragState.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    const crossedSnapThreshold = Math.abs(drag.rotation) > rotationStep * 0.18;
+    if (drag.dragging && !cancelled && crossedSnapThreshold) {
+      let steps = Math.round(drag.rotation / rotationStep);
+      if (!steps) steps = Math.sign(drag.rotation);
+      move(steps);
+      suppressClick.current = true;
+      window.setTimeout(() => { suppressClick.current = false; }, 350);
+    }
+
+    dragState.current = { pointerId: null, startX: 0, startY: 0, rotation: 0, dragging: false };
+    setDragRotation(0);
+    setIsDragging(false);
+    setIsPaused(
+      event.currentTarget.matches(":hover") ||
+      event.currentTarget.contains(document.activeElement)
+    );
+  };
+
+  const handleClickCapture = (event) => {
+    if (!suppressClick.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressClick.current = false;
+  };
+
   useEffect(() => {
-    if (isCaseHovered) return;
+    if (
+      isPaused ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) return undefined;
     const timer = setInterval(() => {
-      if (!rail.current) return;
-      const maxScroll = rail.current.scrollWidth - rail.current.clientWidth;
-      if (rail.current.scrollLeft >= maxScroll - 20) {
-        rail.current.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        rail.current.scrollBy({
-          left: rail.current.clientWidth * 0.45,
-          behavior: "smooth",
-        });
-      }
+      setActiveIndex((index) => (index + 1) % caseStudies.length);
     }, 4500);
 
     return () => clearInterval(timer);
-  }, [isCaseHovered]);
-
-  useGSAP(() => {
-    // Heading clip-path reveal
-    const heading = section.current?.querySelector(".more-heading h2");
-    if (heading) {
-      gsap.fromTo(
-        heading,
-        { clipPath: "inset(0 100% 0 0)", opacity: 1 },
-        {
-          clipPath: "inset(0 0% 0 0)",
-          duration: 1.1,
-          ease: "power3.out",
-          scrollTrigger: { trigger: heading, start: "top 85%", once: true },
-        }
-      );
-    }
-
-    // Case tiles: staggered y + rotation
-    const tiles = gsap.utils.toArray(".case-tile", section.current);
-    if (tiles.length) {
-      gsap.from(tiles, {
-        y: 60,
-        rotation: 2,
-        opacity: 0,
-        stagger: 0.1,
-        duration: 0.9,
-        ease: "power3.out",
-        scrollTrigger: { trigger: rail.current, start: "top 88%", once: true },
-      });
-    }
-
-    // Image scale on enter
-    const images = gsap.utils.toArray(".case-image img", section.current);
-    images.forEach((img) => {
-      gsap.from(img, {
-        scale: 1.15,
-        duration: 1.2,
-        ease: "power2.out",
-        scrollTrigger: { trigger: img, start: "top 90%", once: true },
-      });
-    });
-  }, { scope: section });
+  }, [isPaused]);
 
   return (
-    <section className="more-section case-section" id="case-studies" ref={section}>
+    <section className="more-section case-section" id="case-studies">
       <div className="more-container">
         <div className="case-heading-row">
           <SectionHeading
@@ -534,45 +516,83 @@ function CaseStudies() {
             <a className="more-outline-link" href={site("/client-case-studies")}>
               View all projects <ArrowUpRight size={16} />
             </a>
-            <button onClick={() => move(-1)} aria-label="Previous case studies">
+            <button type="button" onClick={() => move(-1)} aria-label="Previous case studies">
               <ArrowLeft size={19} />
             </button>
-            <button onClick={() => move(1)} aria-label="Next case studies">
+            <button type="button" onClick={() => move(1)} aria-label="Next case studies">
               <ArrowRight size={19} />
             </button>
           </div>
         </div>
 
         <div
-          className="horizontal-rail case-rail"
-          ref={rail}
-          onMouseEnter={() => setIsCaseHovered(true)}
-          onMouseLeave={() => setIsCaseHovered(false)}
-          onTouchStart={() => setIsCaseHovered(true)}
-          onTouchEnd={() => setIsCaseHovered(false)}
+          className={`case-carousel${isDragging ? " is-dragging" : ""}`}
+          role="region"
+          aria-label="Selected work carousel"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={(event) => setIsPaused(event.currentTarget.contains(document.activeElement))}
+          onFocusCapture={() => setIsPaused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setIsPaused(event.currentTarget.matches(":hover"));
+            }
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={finishPointer}
+          onPointerCancel={(event) => finishPointer(event, true)}
+          onClickCapture={handleClickCapture}
+          onPointerLeave={(event) => {
+            if (dragState.current.pointerId !== null && !dragState.current.dragging) {
+              dragState.current.pointerId = null;
+              setIsPaused(event.currentTarget.contains(document.activeElement));
+            }
+          }}
         >
-          {caseStudies.map((item, index) => (
-            <a
-              className="case-tile"
-              href={item.pdf}
-              target="_blank"
-              rel="noreferrer"
-              key={item.title}
-            >
-              <div className="case-image">
-                <img src={item.image} alt={item.title} loading="lazy" />
-                <span className="case-index">0{index + 1}</span>
-                <span className="case-open"><ArrowUpRight size={22} /></span>
-              </div>
-              <div className="case-caption">
-                <span>CASE STUDY / 2026</span>
-                <h3>{item.title}</h3>
-                <p>View case study <MoveUpRight size={15} /></p>
-              </div>
-            </a>
-          ))}
+          <div
+            className="case-carousel-track"
+            style={{ "--carousel-rotation": `${activeIndex * rotationStep + dragRotation}deg` }}
+          >
+            {caseStudies.map((item, index) => {
+              const relativeIndex = (index - activeIndex + caseStudies.length) % caseStudies.length;
+              const offset = relativeIndex > caseStudies.length / 2
+                ? relativeIndex - caseStudies.length
+                : relativeIndex;
+              const isVisible = Math.abs(offset) <= 1;
+
+              return (
+                <a
+                  className={`case-tile ${offset === 0 ? "is-active" : isVisible ? "is-side" : "is-hidden"}`}
+                  href={item.pdf}
+                  target="_blank"
+                  rel="noreferrer"
+                  key={item.title}
+                  style={{ "--card-angle": `${-index * rotationStep}deg` }}
+                  aria-hidden={!isVisible}
+                  aria-current={offset === 0 ? "true" : undefined}
+                  tabIndex={isVisible ? 0 : -1}
+                  onClick={(event) => {
+                    if (offset !== 0) {
+                      event.preventDefault();
+                      setActiveIndex(index);
+                    }
+                  }}
+                >
+                  <div className="case-image">
+                    <img src={item.image} alt={item.title} loading="lazy" />
+                    {/* <span className="case-index">0{index + 1}</span> */}
+                    <div className="case-caption">
+                      <span>CASE STUDY / 2026</span>
+                      <h3>{item.title}</h3>
+                    </div>
+                    <span className="case-open"><ArrowUpRight size={22} /></span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
         </div>
-        <div className="rail-hint">SWIPE OR USE THE ARROWS TO EXPLORE</div>
+        {/* <div className="rail-hint">SWIPE OR USE THE ARROWS TO EXPLORE</div> */}
       </div>
     </section>
   );
@@ -581,6 +601,7 @@ function CaseStudies() {
 /* ─── WHAT WE DO ─────────────────────────────────────────────────── */
 function WhatWeDo() {
   const section = useRef(null);
+  const headingText = "Marketing solutions for your business's growth.";
 
   useGSAP(() => {
     // Metric rings counter + stroke animation
@@ -607,20 +628,8 @@ function WhatWeDo() {
       });
     });
 
-    // Heading reveal
-    const heading = section.current?.querySelector(".what-copy h2");
-    if (heading) {
-      gsap.from(heading, {
-        clipPath: "inset(0 100% 0 0)",
-        opacity: 0,
-        duration: 1,
-        ease: "power3.out",
-        scrollTrigger: { trigger: heading, start: "top 85%", once: true },
-      });
-    }
-
     // what-copy elements stagger from right
-    const copyEls = gsap.utils.toArray(".what-copy > *", section.current);
+    const copyEls = gsap.utils.toArray(".what-copy > :not(h2)", section.current);
     if (copyEls.length) {
       gsap.from(copyEls, {
         x: 40,
@@ -630,6 +639,41 @@ function WhatWeDo() {
         ease: "power3.out",
         scrollTrigger: { trigger: section.current?.querySelector(".what-copy"), start: "top 82%", once: true },
       });
+    }
+
+    const headingWords = gsap.utils.toArray(".what-copy .what-word", section.current);
+    if (
+      headingWords.length &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      gsap.fromTo(
+        headingWords,
+        {
+          x: (index) => (index % 2 === 0 ? -24 : 24),
+          yPercent: (index) => (index % 2 === 0 ? 105 : -105),
+          rotationX: (index) => (index % 2 === 0 ? -38 : 32),
+          rotationY: (index) => (index % 2 === 0 ? 16 : -16),
+          scale: (index) => (index % 2 === 0 ? 0.88 : 0.8),
+          transformPerspective: 900,
+          opacity: 0,
+        },
+        {
+          x: 0,
+          yPercent: 0,
+          rotationX: 0,
+          rotationY: 0,
+          scale: 1,
+          opacity: 1,
+          duration: 1.15,
+          stagger: { each: 0.1, from: "center" },
+          ease: "back.out(1.45)",
+          scrollTrigger: {
+            trigger: section.current?.querySelector(".what-copy"),
+            start: "top 82%",
+            once: true,
+          },
+        }
+      );
     }
 
     // Floating animation on metric-rings container
@@ -666,7 +710,16 @@ function WhatWeDo() {
           </div>
           <div className="what-copy">
             <span>DataMySite</span>
-            <h2>Marketing solutions for your business's growth.</h2>
+            <h2 aria-label={headingText}>
+              {headingText.split(" ").map((word, index) => (
+                <Fragment key={`${word}-${index}`}>
+                  {index > 0 && " "}
+                  <span className="what-word-clip" aria-hidden="true">
+                    <span className="what-word">{word}</span>
+                  </span>
+                </Fragment>
+              ))}
+            </h2>
             <p>Elevate your brand visibility and boost sales with integrated media, creative and marketing solutions.</p>
             <a href="#services" className="more-red-link">
               Discover what we do <ArrowUpRight size={17} />
@@ -681,10 +734,6 @@ function WhatWeDo() {
 /* ─── SERVICES WITH INTERACTIVE HOVER PEEK ────────────────────────── */
 function Services() {
   const section = useRef(null);
-  const peekRef = useRef(null);
-  const [peekActive, setPeekActive] = useState(false);
-  const [peekImg, setPeekImg] = useState("");
-
   const serviceImages = [
     "https://datamysite.com/public/assets/img/service/1.png",
     "https://datamysite.com/public/assets/img/service/2.png",
@@ -731,38 +780,8 @@ function Services() {
     }
   }, { scope: section });
 
-  const handleServiceEnter = (imgSrc) => {
-    setPeekImg(imgSrc);
-    setPeekActive(true);
-  };
-
-  const handleServiceLeave = () => {
-    setPeekActive(false);
-  };
-
-  const handleMouseMove = (e) => {
-    if (!peekRef.current) return;
-    const x = e.clientX + 24;
-    const y = e.clientY - 90;
-    peekRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(4deg)`;
-  };
-
   return (
-    <section
-      className="more-section services-section"
-      id="services"
-      ref={section}
-      onMouseMove={handleMouseMove}
-    >
-      {/* Floating service peek thumbnail */}
-      <div
-        className={`service-peek ${peekActive ? "is-visible" : ""}`}
-        ref={peekRef}
-        aria-hidden="true"
-      >
-        {peekImg && <img src={peekImg} alt="" />}
-      </div>
-
+    <section className="more-section services-section" id="services" ref={section}>
       <div className="more-container" style={{ position: "relative" }}>
         {/* Decorative background text */}
         <div
@@ -795,14 +814,11 @@ function Services() {
           <div className="services-list">
             {services.map((service, index) => {
               const Icon = service.icon;
-              const imgSrc = serviceImages[index % serviceImages.length];
               return (
                 <a
                   className="service-item"
                   href={site(service.url)}
                   key={service.title}
-                  onMouseEnter={() => handleServiceEnter(imgSrc)}
-                  onMouseLeave={handleServiceLeave}
                 >
                   <span className="service-count">0{index + 1}</span>
                   <span className="service-icon"><Icon size={22} /></span>
@@ -810,6 +826,13 @@ function Services() {
                     <strong>{service.title}</strong>
                     <small>{service.description}</small>
                   </span>
+                  <img
+                    className="service-preview"
+                    src={serviceImages[index % serviceImages.length]}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                  />
                   <span className="service-arrow"><ArrowUpRight size={21} /></span>
                 </a>
               );
@@ -821,7 +844,7 @@ function Services() {
   );
 }
 
-/* ─── CLIENTS WALL (INFINITE LOGO MARQUEE) ─────────────────────────── */
+/* ─── CLIENT DIRECTORY ─────────────────────────────────────────────── */
 const clientLogos = [
   [38, "Nike"],
   [12, "Intel"],
@@ -866,56 +889,73 @@ const clientLogos = [
   [41, "Royal"],
 ];
 
-function ClientsWall() {
-  const row1 = clientLogos.slice(0, 21);
-  const row2 = clientLogos.slice(21);
+function ClientsDirectory() {
+  const [isPaused, setIsPaused] = useState(false);
 
   return (
-    <section className="clients-wall-section" id="clients">
+    <section className="clients-section" id="clients">
       <div className="more-container">
-        <div className="cl-head">
-          <div>
+        <div className="clients-heading">
+          <div className="clients-heading-copy">
             <span className="more-eyebrow">OUR CLIENTS</span>
-            <h2 className="cl-title">
-              Brands we <span className="cl-outline">work with</span>
+            <h2 className="clients-title">
+              Good company.<br />
+              <span>Better outcomes.</span>
             </h2>
           </div>
-          <p className="cl-desc">
+          <p className="clients-description">
             At DataMySite, we are proud to partner with a diverse range of clients across various industries, from ambitious startups to established global enterprises.
           </p>
+          <div className="clients-total" aria-label={`${clientLogos.length} client brands`}>
+            <strong>{clientLogos.length}</strong>
+            <span>client brands</span>
+          </div>
         </div>
-      </div>
 
-      <div className="cl-wall" aria-hidden="true">
-        <div className="cl-row">
-          {[...row1, ...row1].map(([num, name], idx) => (
-            <div className="lgo" key={`r1-${num}-${idx}`}>
-              <img
-                src={`https://datamysite.com/public/assets/img/clients-final/${num}.png`}
-                alt={`${name} logo`}
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement.innerHTML = `<span class="nm">${name}</span>`;
-                }}
-              />
-            </div>
-          ))}
-        </div>
-        <div className="cl-row rev">
-          {[...row2, ...row2].map(([num, name], idx) => (
-            <div className="lgo" key={`r2-${num}-${idx}`}>
-              <img
-                src={`https://datamysite.com/public/assets/img/clients-final/${num}.png`}
-                alt={`${name} logo`}
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement.innerHTML = `<span class="nm">${name}</span>`;
-                }}
-              />
-            </div>
-          ))}
+        <div
+          className={`clients-marquee${isPaused ? " is-paused" : ""}`}
+          role="region"
+          aria-label="DataMySite client brands"
+          tabIndex={0}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={(event) => setIsPaused(event.currentTarget.contains(document.activeElement))}
+          onFocusCapture={() => setIsPaused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setIsPaused(event.currentTarget.matches(":hover"));
+            }
+          }}
+        >
+          <div className="clients-track">
+            {[0, 1].map((setIndex) => (
+              <div
+                className="clients-set"
+                role="list"
+                aria-label={setIndex === 0 ? `${clientLogos.length} client brands` : undefined}
+                aria-hidden={setIndex === 1}
+                key={setIndex}
+              >
+                {clientLogos.map(([num, name]) => (
+                  <article className="client-entry" role="listitem" key={`${setIndex}-${num}`}>
+                    <div className="client-logo-frame">
+                      <img
+                        src={`https://datamysite.com/public/assets/img/clients-final/${num}.png`}
+                        alt=""
+                        loading="lazy"
+                        draggable="false"
+                        onError={(event) => {
+                          event.currentTarget.hidden = true;
+                          event.currentTarget.parentElement.classList.add("is-fallback");
+                        }}
+                      />
+                      <span className="client-logo-fallback" aria-hidden="true">{name}</span>
+                    </div>
+                    <span className="client-name">{name}</span>
+                  </article>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -924,84 +964,73 @@ function ClientsWall() {
 
 /* ─── TESTIMONIALS ───────────────────────────────────────────────── */
 function Testimonials() {
-  const rail = useRef(null);
   const section = useRef(null);
+  const stage = useRef(null);
   const [active, setActive] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const drag = useRef({ pointerId: null, startX: 0, startY: 0, dragging: false });
 
-  // Smooth container-only scrolling with zero vertical jump
-  const scrollToCard = (index) => {
-    if (!rail.current) return;
-    const target = rail.current.children[index];
-    if (target) {
-      const railLeft = rail.current.getBoundingClientRect().left;
-      const targetLeft = target.getBoundingClientRect().left;
-      const scrollOffset = targetLeft - railLeft + rail.current.scrollLeft;
-      rail.current.scrollTo({
-        left: scrollOffset,
-        behavior: "smooth",
-      });
-      setActive(index);
-    }
-  };
+  const selectReview = (index) => setActive(index);
 
   const move = (direction) => {
-    const next = (active + direction + testimonials.length) % testimonials.length;
-    scrollToCard(next);
+    setActive((index) => (index + direction + testimonials.length) % testimonials.length);
   };
 
-  // Continuous auto-slide timer that pauses on hover or touch
   useEffect(() => {
-    if (isHovered) return;
+    if (isPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
     const timer = setInterval(() => {
-      setActive((prev) => {
-        const next = (prev + 1) % testimonials.length;
-        if (rail.current && rail.current.children[next]) {
-          const railLeft = rail.current.getBoundingClientRect().left;
-          const targetLeft = rail.current.children[next].getBoundingClientRect().left;
-          const scrollOffset = targetLeft - railLeft + rail.current.scrollLeft;
-          rail.current.scrollTo({ left: scrollOffset, behavior: "smooth" });
-        }
-        return next;
-      });
+      setActive((index) => (index + 1) % testimonials.length);
     }, 4500);
 
     return () => clearInterval(timer);
-  }, [isHovered]);
+  }, [isPaused]);
 
-  // Sync active dot indicator when user manually swipes/scrolls on mobile
-  useEffect(() => {
-    const el = rail.current;
-    if (!el) return;
-
-    let timeoutId;
-    const handleScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        if (!el || !el.children.length) return;
-        const currentLeft = el.scrollLeft;
-        let closestIndex = 0;
-        let minDiff = Infinity;
-        for (let i = 0; i < el.children.length; i++) {
-          const child = el.children[i];
-          const diff = Math.abs(child.offsetLeft - el.offsetLeft - currentLeft);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestIndex = i;
-          }
-        }
-        setActive(closestIndex);
-      }, 80);
+  const handlePointerDown = (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    drag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      dragging: false,
     };
+    setIsPaused(true);
+  };
 
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      el.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeoutId);
-    };
-  }, []);
+  const handlePointerMove = (event) => {
+    const pointer = drag.current;
+    if (pointer.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - pointer.startX;
+    const deltaY = event.clientY - pointer.startY;
+    if (!pointer.dragging && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      pointer.dragging = true;
+      setIsDragging(true);
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    if (pointer.dragging) event.preventDefault();
+  };
+
+  const finishPointer = (event, cancelled = false) => {
+    const pointer = drag.current;
+    if (pointer.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - pointer.startX;
+    if (pointer.dragging && !cancelled && Math.abs(deltaX) > 36) {
+      move(deltaX < 0 ? 1 : -1);
+    }
+
+    drag.current = { pointerId: null, startX: 0, startY: 0, dragging: false };
+    setIsDragging(false);
+    setIsPaused(
+      section.current?.matches(":hover") ||
+      section.current?.contains(document.activeElement)
+    );
+  };
 
   useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     // Heading reveal
     const heading = section.current?.querySelector(".more-heading h2");
     if (heading) {
@@ -1014,22 +1043,31 @@ function Testimonials() {
       });
     }
 
-    // Cards animate in from y:40
-    const cards = gsap.utils.toArray(".testimonial-card", section.current);
-    if (cards.length) {
-      gsap.from(cards, {
-        y: 40,
+    if (stage.current) {
+      gsap.from(stage.current, {
+        y: 28,
         opacity: 0,
-        stagger: 0.1,
         duration: 0.8,
         ease: "power3.out",
-        scrollTrigger: { trigger: rail.current, start: "top 85%", once: true },
+        scrollTrigger: { trigger: stage.current, start: "top 85%", once: true },
       });
     }
   }, { scope: section });
 
   return (
-    <section className="more-section testimonials-section" id="testimonials" ref={section}>
+    <section
+      className="more-section testimonials-section"
+      id="testimonials"
+      ref={section}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={(event) => setIsPaused(event.currentTarget.contains(document.activeElement))}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsPaused(event.currentTarget.matches(":hover"));
+        }
+      }}
+    >
       <div className="more-container">
         <div className="testimonial-heading-row">
           <SectionHeading
@@ -1052,6 +1090,7 @@ function Testimonials() {
           <span><i /> What our clients say</span>
           <div>
             <button
+              type="button"
               onClick={() => move(-1)}
               aria-label="Previous testimonial"
               className="slider-nav-btn"
@@ -1059,6 +1098,7 @@ function Testimonials() {
               <ArrowLeft size={18} />
             </button>
             <button
+              type="button"
               onClick={() => move(1)}
               aria-label="Next testimonial"
               className="slider-nav-btn"
@@ -1069,25 +1109,65 @@ function Testimonials() {
         </div>
 
         <div
-          className="horizontal-rail testimonial-rail"
-          ref={rail}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onTouchStart={() => setIsHovered(true)}
-          onTouchEnd={() => setIsHovered(false)}
+          className={`testimonial-stage${isDragging ? " is-dragging" : ""}`}
+          ref={stage}
+          role="group"
+          aria-roledescription="carousel"
+          aria-label="Client testimonials"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowLeft") {
+              event.preventDefault();
+              move(-1);
+            } else if (event.key === "ArrowRight") {
+              event.preventDefault();
+              move(1);
+            }
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={finishPointer}
+          onPointerCancel={(event) => finishPointer(event, true)}
+          onPointerLeave={(event) => {
+            if (drag.current.pointerId !== null && !drag.current.dragging) {
+              drag.current.pointerId = null;
+              setIsPaused(
+                section.current?.matches(":hover") ||
+                section.current?.contains(document.activeElement)
+              );
+            }
+          }}
         >
-          {testimonials.map((review, index) => (
-            <article className="testimonial-card" key={review.name}>
-              <div className="testimonial-top">
-                <span className={`review-avatar avatar-${index}`}>{review.initials}</span>
-                <div><strong>{review.name}</strong><small>{review.date}</small></div>
-                <span className="review-stars">★★★★★</span>
-              </div>
-              <Quote className="quote-icon" size={30} />
-              <p>{review.text}</p>
-              <span className="review-google">GOOGLE REVIEW</span>
-            </article>
-          ))}
+          {testimonials.map((review, index) => {
+            const relativeIndex = (index - active + testimonials.length) % testimonials.length;
+            const offset = relativeIndex > testimonials.length / 2
+              ? relativeIndex - testimonials.length
+              : relativeIndex;
+            const isVisible = Math.abs(offset) <= 1;
+            const position = offset === -1 ? "is-prev" : offset === 1 ? "is-next" : offset === 0 ? "is-active" : "is-hidden";
+
+            return (
+              <article
+                className={`testimonial-card ${position}`}
+                key={review.name}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${index + 1} of ${testimonials.length}: ${review.name}`}
+                aria-hidden={!isVisible}
+                aria-current={offset === 0 ? "true" : undefined}
+                tabIndex={isVisible ? 0 : -1}
+              >
+                <div className="testimonial-top">
+                  <span className={`review-avatar avatar-${index}`}>{review.initials}</span>
+                  <div><strong>{review.name}</strong><small>{review.date}</small></div>
+                  <span className="review-stars">★★★★★</span>
+                </div>
+                <Quote className="quote-icon" size={30} />
+                <p>{review.text}</p>
+                <span className="review-google">GOOGLE REVIEW</span>
+              </article>
+            );
+          })}
         </div>
 
         <div className="testimonial-bottom">
@@ -1095,9 +1175,11 @@ function Testimonials() {
             {testimonials.map((review, index) => (
               <button
                 key={review.name}
+                type="button"
                 className={active === index ? "active" : ""}
-                onClick={() => scrollToCard(index)}
+                onClick={() => selectReview(index)}
                 aria-label={`Show review ${index + 1}`}
+                aria-current={active === index ? "true" : undefined}
               />
             ))}
           </div>
@@ -1606,11 +1688,11 @@ export default function MoreSections() {
 
   return (
     <div ref={page}>
-      <Ticker />
+      <MomentumStrip />
       <CaseStudies />
       <WhatWeDo />
       <Services />
-      <ClientsWall />
+      <ClientsDirectory />
       <Testimonials />
       <Blogs />
       <FAQ />

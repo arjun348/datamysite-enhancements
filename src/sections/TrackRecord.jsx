@@ -48,11 +48,8 @@ export default function TrackRecord() {
       });
 
       gsap.from(".track-stat", {
-        y: 65,
         opacity: 0,
-        rotateX: 12,
-        transformOrigin: "center bottom",
-        duration: 1,
+        duration: 0.8,
         stagger: 0.15,
         ease: "power3.out",
         scrollTrigger: {
@@ -126,9 +123,9 @@ export default function TrackRecord() {
             OUR TRACK RECORD
           </span>
 
-          <span className="track-section-number">
+          {/* <span className="track-section-number">
             02 / THE NUMBERS
-          </span>
+          </span> */}
         </div>
 
         <div className="track-layout">
@@ -174,7 +171,7 @@ export default function TrackRecord() {
             {statistics.map((stat) => (
               <article className="track-stat" key={stat.number}>
                 <div className="track-stat-top">
-                  <span>{stat.number}</span>
+                  {/* <span>{stat.number}</span> */}
                   <ArrowUpRight size={17} />
                 </div>
 

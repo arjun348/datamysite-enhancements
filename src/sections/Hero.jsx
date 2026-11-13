@@ -1,14 +1,34 @@
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDownRight, ArrowRight, Check, Star, LockKeyhole } from "lucide-react";
 import { gsap, useGSAP } from "../animations/gsap";
 
+const submitConfetti = [
+  [-46, -34, -110, "#e04b43"],
+  [-30, -58, 75, "#0b4a3a"],
+  [-12, -42, 140, "#e5aa37"],
+  [12, -56, -65, "#e04b43"],
+  [33, -42, 105, "#0b4a3a"],
+  [48, -22, -125, "#e5aa37"],
+  [-53, 5, 65, "#0b4a3a"],
+  [-34, 28, -80, "#e04b43"],
+  [-15, 44, 130, "#e5aa37"],
+  [13, 47, -115, "#0b4a3a"],
+  [34, 28, 85, "#e04b43"],
+  [53, 4, -55, "#e5aa37"],
+];
+
 export default function Hero() {
   const container = useRef(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submissionState, setSubmissionState] = useState("idle");
+  const submissionLock = useRef(false);
+  const submissionTimer = useRef(null);
+
+  useEffect(() => () => window.clearTimeout(submissionTimer.current), []);
 
   useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
 
     intro
@@ -29,7 +49,6 @@ export default function Hero() {
       .from(".hero-form-card", {
         y: 50,
         opacity: 0,
-        rotateX: 8,
         duration: 1,
       }, "-=0.8")
       .from(".hero-float-img", {
@@ -66,16 +85,29 @@ export default function Hero() {
 
   function handleSubmit(event) {
     event.preventDefault();
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSubmitted(true);
-    }, 550);
+    if (submissionLock.current) return;
+
+    window.clearTimeout(submissionTimer.current);
+    submissionLock.current = true;
+    setSubmissionState("preparing");
+    submissionTimer.current = window.setTimeout(() => {
+      submissionLock.current = false;
+      setSubmissionState("ready");
+    }, 700);
   }
+
+  function handleFieldChange() {
+    if (submissionState === "ready") setSubmissionState("idle");
+  }
+
+  const preparing = submissionState === "preparing";
+  const confirmationReady = submissionState === "ready";
 
   return (
     <section className="hero-section" ref={container}>
-      <div className="hero-background" />
+      <div className="hero-background" aria-hidden="true">
+        <div className="hero-background-pan" />
+      </div>
       <div className="hero-grid-overlay" />
       <div className="hero-orb hero-orb-one" />
       <div className="hero-orb hero-orb-two" />
@@ -87,24 +119,6 @@ export default function Hero() {
         <i style={{ top: "55%", "--t": "2.6s", "--dl": "0.5s", width: "28%" }} />
         <i style={{ top: "72%", "--t": "3.5s", "--dl": "1.8s", width: "35%" }} />
         <i style={{ top: "85%", "--t": "2.8s", "--dl": "0.9s", width: "45%" }} />
-      </div>
-
-      {/* Rotating Agency Badge */}
-      <div className="hero-badge" aria-hidden="true">
-        <svg viewBox="0 0 200 200">
-          <defs>
-            <path
-              id="heroBadgeCirc"
-              d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"
-            />
-          </defs>
-          <text>
-            <textPath href="#heroBadgeCirc">
-              DUBAI'S #1 AGENCY • DATAMYSITE • DUBAI'S #1 AGENCY •
-            </textPath>
-          </text>
-        </svg>
-        <strong>20+</strong>
       </div>
 
       {/* Floating decorative image — bottom right, clipped to rounded rect */}
@@ -148,65 +162,70 @@ export default function Hero() {
           </a>
         </div>
 
-        <form className="hero-form-card" onSubmit={handleSubmit}>
+        <form className="hero-form-card" onSubmit={handleSubmit} aria-busy={preparing}>
           <div className="form-topline">
             <span>LET'S MAKE SOMETHING MATTER</span>
-            <span className="form-index">01 / 04</span>
+            {/* <span className="form-index">01 / 04</span> */}
           </div>
 
           <h2>Ready to get <span>results?</span></h2>
-          <p>Drop us your details — our experts respond within 60 minutes.</p>
+          <p>Outline your project below, then connect with our team directly.</p>
 
-          {submitted ? (
-            <div className="form-success animated-success">
-              <div className="success-icon-badge">
-                <Check size={32} />
-              </div>
-              <strong>Thank you for your interest!</strong>
-              <p>Our Dubai marketing experts will review your request.</p>
-              <span className="demo-notice">This is a frontend demo. No enquiry has been sent.</span>
+          <label>
+            <span>Your full name</span>
+            <input name="name" placeholder="John Smith" onChange={handleFieldChange} />
+          </label>
+
+          <label>
+            <span>Phone number</span>
+            <input name="phone" type="tel" placeholder="+971" onChange={handleFieldChange} />
+          </label>
+
+          <label>
+            <span>Email address</span>
+            <input name="email" type="email" placeholder="john@company.com" onChange={handleFieldChange} />
+          </label>
+
+          <label>
+            <span>Tell us what you need</span>
+            <textarea
+              name="description"
+              rows="2"
+              placeholder="A little about your project..."
+              onChange={handleFieldChange}
+            />
+          </label>
+
+          <div className="hero-submit-wrap">
+            {confirmationReady ? (
+              <section className="form-confirmation" role="status" aria-live="polite">
+                <div className="form-confirmation-icon">
+                  <Check size={20} aria-hidden="true" />
+                </div>
+                <div className="form-confirmation-content">
+                  <span className="form-confirmation-eyebrow">NEXT STEP</span>
+                  <h3>Let’s talk about your project.</h3>
+                  <p>Start a conversation to share your goals and explore the right next steps for your project.</p>
+                  <a
+                    className="form-confirmation-link"
+                    href="https://api.whatsapp.com/send/?phone=971525287259"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Chat with our team
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </a>
+                </div>
+              </section>
+            ) : (
               <button
-                type="button"
-                className="btn-resubmit"
-                onClick={() => setSubmitted(false)}
-              >
-                Submit another enquiry ↺
-              </button>
-            </div>
-          ) : (
-            <>
-              <label>
-                <span>Your full name</span>
-                <input name="name" placeholder="John Smith" required />
-              </label>
-
-              <label>
-                <span>Phone number</span>
-                <input name="phone" type="tel" placeholder="+971" required />
-              </label>
-
-              <label>
-                <span>Email address</span>
-                <input name="email" type="email" placeholder="john@company.com" required />
-              </label>
-
-              <label>
-                <span>Tell us what you need</span>
-                <textarea
-                  name="description"
-                  rows="2"
-                  placeholder="A little about your project..."
-                />
-              </label>
-
-              <button
-                className={`form-submit ${submitting ? "is-submitting" : ""}`}
+                className={`form-submit${preparing ? " is-preparing" : ""}`}
                 type="submit"
-                disabled={submitting}
+                disabled={preparing}
               >
-                {submitting ? (
+                {preparing ? (
                   <span className="btn-spinner-wrap">
-                    <span className="btn-spinner" /> Processing...
+                    <span className="btn-spinner" aria-hidden="true" /> Preparing...
                   </span>
                 ) : (
                   <>
@@ -215,13 +234,35 @@ export default function Hero() {
                   </>
                 )}
               </button>
-            </>
+            )}
+            {confirmationReady && (
+              <span className="submit-confetti" aria-hidden="true">
+                {submitConfetti.map(([x, y, rotation, color], index) => (
+                  <i
+                    key={index}
+                    style={{
+                      "--confetti-x": `${x}px`,
+                      "--confetti-y": `${y}px`,
+                      "--confetti-rotation": `${rotation}deg`,
+                      "--confetti-color": color,
+                      "--confetti-delay": `${(index % 4) * 25}ms`,
+                    }}
+                  />
+                ))}
+              </span>
+            )}
+          </div>
+
+          {!confirmationReady && (
+            <p className="form-submit-feedback" role="status" aria-live="polite" aria-atomic="true">
+              {preparing ? "Preparing your next step. Your details remain on this page." : ""}
+            </p>
           )}
 
           <div className="hero-form-trust">
-            <span><Star size={14} /> No spam, ever</span>
-            <span><Check size={14} /> Reply in 60 min</span>
-            <span><LockKeyhole size={14} /> 100% Private</span>
+            <span><Star size={14} /> No auto-send</span>
+            <span><Check size={14} /> Direct contact</span>
+            <span><LockKeyhole size={14} /> Details stay here</span>
           </div>
         </form>
       </div>
