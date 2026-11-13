@@ -1615,7 +1615,7 @@ function CTAFooter() {
             {subscribed ? (
               <div className="newsletter-success-badge">
                 <Check size={18} />
-                <span>Subscribed! (Frontend demo only)</span>
+                <span>Subscribed!</span>
               </div>
             ) : (
               <form onSubmit={handleNewsletterSubmit}>
@@ -1636,9 +1636,9 @@ function CTAFooter() {
         </div>
 
         {/* Mega animated branding text */}
-        <div className="footer-mega-text" aria-hidden="true">
+        {/* <div className="footer-mega-text" aria-hidden="true">
           <span>DataMySite</span>
-        </div>
+        </div> */}
 
         <div className="footer-copyright">
           <div className="more-container">
